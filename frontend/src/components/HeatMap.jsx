@@ -6,6 +6,7 @@ import './HeatMap.css';
 const HeatMap = ({ devices, nodes }) => {
   const mapRef = useRef(null);
   const heatLayerRef = useRef(null);
+  const deviceMarkersRef = useRef(null);
   const mapInstanceRef = useRef(null);
 
   useEffect(() => {
@@ -73,6 +74,11 @@ const HeatMap = ({ devices, nodes }) => {
       mapInstanceRef.current.removeLayer(heatLayerRef.current);
     }
 
+    // Remove old device markers
+    if (deviceMarkersRef.current) {
+      mapInstanceRef.current.removeLayer(deviceMarkersRef.current);
+    }
+
     // Create heat map data points
     const heatData = devices.map(device => [
       device.position[1],
@@ -96,7 +102,10 @@ const HeatMap = ({ devices, nodes }) => {
       }
     }).addTo(mapInstanceRef.current);
 
-    // Add device markers
+    // Create a new layer group for device markers
+    deviceMarkersRef.current = L.layerGroup();
+
+    // Add device markers to the layer group
     devices.forEach(device => {
       const icon = L.divIcon({
         className: 'device-marker',
@@ -105,8 +114,11 @@ const HeatMap = ({ devices, nodes }) => {
       });
 
       L.marker([device.position[1], device.position[0]], { icon })
-        .addTo(mapInstanceRef.current);
+        .addTo(deviceMarkersRef.current);
     });
+
+    // Add the layer group to the map
+    deviceMarkersRef.current.addTo(mapInstanceRef.current);
   }, [devices]);
 
   return (

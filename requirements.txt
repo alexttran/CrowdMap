@@ -1,0 +1,23 @@
+# CrowdMap Backend Requirements
+# Install with: pip install -r requirements.txt
+
+# BLE Communication
+bleak==0.21.1
+
+# Web Server and WebSocket
+flask==3.0.0
+flask-socketio==5.3.5
+flask-cors==4.0.0
+python-socketio==5.10.0
+
+# Scientific Computing
+numpy==1.26.2
+
+# Visualization (optional - only needed for map.py with matplotlib)
+matplotlib==3.8.2
+scipy==1.11.4
+
+# Additional dependencies (automatically installed with above)
+# eventlet - for socketio async support
+# werkzeug - flask dependency
+# simple-websocket - socketio dependency

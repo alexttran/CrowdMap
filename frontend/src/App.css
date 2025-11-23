@@ -11,11 +11,63 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 
 .side-panel {
   width: 400px;
   min-width: 400px;
+}
+
+/* Connection indicator */
+.connection-indicator {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: rgba(10, 10, 46, 0.9);
+  border: 1px solid rgba(83, 52, 131, 0.8);
+  border-radius: 8px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: 0 0 20px rgba(233, 69, 96, 0.3);
+  z-index: 1000;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+.status-dot.connected {
+  background: #00ff88;
+  box-shadow: 0 0 10px #00ff88;
+}
+
+.status-dot.disconnected {
+  background: #ffaa00;
+  box-shadow: 0 0 10px #ffaa00;
+}
+
+.status-dot.error {
+  background: #ff4444;
+  box-shadow: 0 0 10px #ff4444;
+}
+
+@keyframes statusPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 /* Responsive design */
