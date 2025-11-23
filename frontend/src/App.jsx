@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import HeatMap from './components/HeatMap';
 import StatsPanel from './components/StatsPanel';
-import { esp32Nodes, detectedDevices } from './data/mockData';
+import { esp32Nodes, detectedDevices, updateDevicePositions } from './data/mockData';
 import './App.css';
 
 // WebSocket server URL - change if running on different host
@@ -12,7 +12,7 @@ function App() {
   const [devices, setDevices] = useState(detectedDevices);
   const [nodes, setNodes] = useState(esp32Nodes);
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
-  const [useRealData, setUseRealData] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     console.log('Attempting to connect to WebSocket server at', SOCKET_URL);
@@ -28,19 +28,19 @@ function App() {
     socket.on('connect', () => {
       console.log('✅ Connected to CrowdMap backend!');
       setConnectionStatus('connected');
-      setUseRealData(true);
+      setIsConnected(true);
     });
 
     socket.on('disconnect', () => {
       console.log('❌ Disconnected from backend');
       setConnectionStatus('disconnected');
-      setUseRealData(false);
+      setIsConnected(false);
     });
 
     socket.on('connect_error', (error) => {
       console.log('Connection error:', error.message);
       setConnectionStatus('error');
-      setUseRealData(false);
+      setIsConnected(false);
     });
 
     socket.on('connection_status', (data) => {
@@ -50,6 +50,7 @@ function App() {
     socket.on('map_update', (data) => {
       // Receive real-time data from backend
       if (data.nodes && data.devices) {
+        console.log('📡 Received update:', data.devices.length, 'devices');
         setNodes(data.nodes);
         setDevices(data.devices);
       }
@@ -60,6 +61,19 @@ function App() {
       socket.disconnect();
     };
   }, []);
+
+  // Mock data animation when not connected to backend
+  useEffect(() => {
+    if (!isConnected) {
+      console.log('🔄 Using mock data animation');
+      const interval = setInterval(() => {
+        const updatedDevices = updateDevicePositions();
+        setDevices([...updatedDevices]);
+      }, 2000);
+
+      return () => clearInterval(interval);
+    }
+  }, [isConnected]);
 
   return (
     <div className="app">

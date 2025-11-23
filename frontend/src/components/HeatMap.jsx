@@ -6,7 +6,6 @@ import './HeatMap.css';
 const HeatMap = ({ devices, nodes }) => {
   const mapRef = useRef(null);
   const heatLayerRef = useRef(null);
-  const deviceMarkersRef = useRef(null);
   const mapInstanceRef = useRef(null);
 
   useEffect(() => {
@@ -69,61 +68,75 @@ const HeatMap = ({ devices, nodes }) => {
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
+    console.log('🔥 Heatmap Effect Running');
+    console.log('📊 Devices count:', devices.length);
+    console.log('📍 Device positions:', devices.slice(0, 3).map(d => d.position));
+    console.log('🗺️ L.heatLayer available:', typeof L.heatLayer);
+
     // Remove old heat layer
     if (heatLayerRef.current) {
       mapInstanceRef.current.removeLayer(heatLayerRef.current);
     }
 
-    // Remove old device markers
-    if (deviceMarkersRef.current) {
-      mapInstanceRef.current.removeLayer(deviceMarkersRef.current);
+    if (devices.length === 0) {
+      console.warn('⚠️ No devices to display on heatmap');
+      return;
     }
 
-    // Create heat map data points
+    // Create heat map data points [lat, lng, intensity]
     const heatData = devices.map(device => [
-      device.position[1],
-      device.position[0],
-      0.8 // intensity
+      device.position[1], // lat (y)
+      device.position[0], // lng (x)
+      1.0 // max intensity
     ]);
 
-    // Add heat layer
+    console.log('🔥 Heat data sample:', heatData.slice(0, 3));
+
+    // Check if L.heatLayer exists
+    if (!L.heatLayer) {
+      console.error('❌ L.heatLayer is not available! leaflet.heat not loaded');
+      return;
+    }
+
+    // Add heat layer with MAXIMUM visibility for debugging
     heatLayerRef.current = L.heatLayer(heatData, {
-      radius: 35,
-      blur: 45,
+      radius: 80,          // Much larger radius
+      blur: 40,            // Less blur for sharper visibility
       maxZoom: 10,
-      max: 1.0,
+      max: 1.0,            // Maximum intensity
+      minOpacity: 0.3,     // Minimum opacity so it's always visible
       gradient: {
-        0.0: '#0a0a2e',
-        0.2: '#16213e',
-        0.4: '#0f3460',
-        0.6: '#533483',
-        0.8: '#e94560',
-        1.0: '#ff6b9d'
+        0.0: '#0000ff',    // Bright blue (fully opaque for testing)
+        0.5: '#ff00ff',    // Bright magenta
+        1.0: '#ff0000'     // Bright red
       }
-    }).addTo(mapInstanceRef.current);
-
-    // Create a new layer group for device markers
-    deviceMarkersRef.current = L.layerGroup();
-
-    // Add device markers to the layer group
-    devices.forEach(device => {
-      const icon = L.divIcon({
-        className: 'device-marker',
-        html: '<div class="device-marker-dot"></div>',
-        iconSize: [8, 8]
-      });
-
-      L.marker([device.position[1], device.position[0]], { icon })
-        .addTo(deviceMarkersRef.current);
     });
 
-    // Add the layer group to the map
-    deviceMarkersRef.current.addTo(mapInstanceRef.current);
+    console.log('✅ Heatmap layer created:', heatLayerRef.current);
+    heatLayerRef.current.addTo(mapInstanceRef.current);
+    console.log('✅ Heatmap layer added to map');
   }, [devices]);
 
   return (
     <div className="heatmap-container">
       <div ref={mapRef} className="leaflet-map" />
+
+      {/* Heatmap Legend */}
+      <div className="heatmap-legend">
+        <div className="legend-title">Device Density</div>
+        <div className="legend-scale">
+          <div className="legend-labels">
+            <span>High</span>
+            <span>Medium</span>
+            <span>Low</span>
+            <span>None</span>
+          </div>
+          <div className="legend-gradient"></div>
+        </div>
+        <div className="legend-info">
+          {devices.length} devices detected
+        </div>
+      </div>
     </div>
   );
 };

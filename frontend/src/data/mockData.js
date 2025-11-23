@@ -2,7 +2,7 @@
 export const esp32Nodes = [
   {
     id: 'ESP32-A',
-    name: 'Node Alpha',
+    name: 'Node 1',
     position: [10, 10], // coordinates in meters
     status: 'online',
     rssiAvg: -65,
@@ -10,7 +10,7 @@ export const esp32Nodes = [
   },
   {
     id: 'ESP32-B',
-    name: 'Node Beta',
+    name: 'Node 2',
     position: [90, 10],
     status: 'online',
     rssiAvg: -58,
@@ -18,7 +18,7 @@ export const esp32Nodes = [
   },
   {
     id: 'ESP32-C',
-    name: 'Node Gamma',
+    name: 'Node 3',
     position: [50, 80], // forms triangle
     status: 'online',
     rssiAvg: -62,

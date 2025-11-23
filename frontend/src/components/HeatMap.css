@@ -196,3 +196,86 @@
   text-shadow: none !important;
   cursor: not-allowed !important;
 }
+
+/* Heatmap Legend */
+.heatmap-legend {
+  position: absolute;
+  bottom: 30px;
+  left: 20px;
+  background: rgba(10, 10, 46, 0.95);
+  border: 1px solid rgba(83, 52, 131, 0.8);
+  border-radius: 10px;
+  padding: 20px;
+  min-width: 200px;
+  box-shadow: 0 0 20px rgba(233, 69, 96, 0.4);
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.legend-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #00ff88;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.legend-scale {
+  margin-bottom: 15px;
+}
+
+.legend-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.legend-gradient {
+  height: 20px;
+  border-radius: 4px;
+  background: linear-gradient(
+    to right,
+    #ff6b9d 0%,
+    #e94560 25%,
+    #533483 50%,
+    #0f3460 75%,
+    #16213e 100%
+  );
+  box-shadow: 0 0 10px rgba(233, 69, 96, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.legend-info {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Animation for legend */
+@keyframes legendFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.heatmap-legend {
+  animation: legendFadeIn 0.5s ease-out;
+}
