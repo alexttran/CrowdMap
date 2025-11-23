@@ -1,13 +1,29 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet.heat';
 import './HeatMap.css';
 
-const HeatMap = ({ devices, nodes }) => {
+const HeatMap = ({ devices, nodes, onNodePositionChanged }) => {
   const mapRef = useRef(null);
   const heatLayerRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const nodeMarkersRef = useRef([]);
 
+  // Store manually adjusted node positions (persists across data updates)
+  const [adjustedNodePositions, setAdjustedNodePositions] = useState({});
+
+  // Merge backend nodes with manually adjusted positions
+  const mergedNodes = nodes.map(node => {
+    if (adjustedNodePositions[node.id]) {
+      return {
+        ...node,
+        position: adjustedNodePositions[node.id]
+      };
+    }
+    return node;
+  });
+
+  // Initialize map once (without nodes dependency to prevent zoom reset)
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
@@ -38,8 +54,26 @@ const HeatMap = ({ devices, nodes }) => {
 
     mapInstanceRef.current = map;
 
-    // Add ESP32 node markers
-    nodes.forEach(node => {
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, []);
+
+  // Update ESP32 node markers separately (draggable)
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+
+    // Remove old markers
+    nodeMarkersRef.current.forEach(marker => {
+      mapInstanceRef.current.removeLayer(marker);
+    });
+    nodeMarkersRef.current = [];
+
+    // Add ESP32 node markers (draggable) using mergedNodes
+    mergedNodes.forEach(node => {
       const icon = L.divIcon({
         className: 'node-marker',
         html: `
@@ -51,8 +85,11 @@ const HeatMap = ({ devices, nodes }) => {
         iconSize: [40, 40]
       });
 
-      L.marker([node.position[1], node.position[0]], { icon })
-        .addTo(map)
+      const marker = L.marker([node.position[1], node.position[0]], {
+        icon,
+        draggable: true  // Make nodes draggable
+      })
+        .addTo(mapInstanceRef.current)
         .bindPopup(`
           <div class="node-popup">
             <strong>${node.name}</strong><br/>
@@ -61,15 +98,39 @@ const HeatMap = ({ devices, nodes }) => {
             Devices: ${node.devicesDetected}
           </div>
         `);
-    });
 
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-    };
-  }, [nodes]);
+      // Handle drag events
+      marker.on('dragstart', () => {
+        console.log(`📍 Dragging ${node.name}...`);
+      });
+
+      marker.on('dragend', (e) => {
+        const newPos = e.target.getLatLng();
+        const newPosition = [newPos.lng, newPos.lat]; // [x, y]
+
+        console.log(`📍 ${node.name} moved to: [${newPosition[0].toFixed(2)}, ${newPosition[1].toFixed(2)}]`);
+
+        // Save the new position to state (persists across data updates)
+        setAdjustedNodePositions(prev => ({
+          ...prev,
+          [node.id]: newPosition
+        }));
+
+        // Notify parent component/backend about the position change
+        if (onNodePositionChanged) {
+          onNodePositionChanged({
+            nodeId: node.id,
+            nodeName: node.name,
+            newPosition: newPosition
+          });
+        }
+
+        console.log('✅ Position saved! Node will stay here even when data refreshes.');
+      });
+
+      nodeMarkersRef.current.push(marker);
+    });
+  }, [mergedNodes]);
 
   useEffect(() => {
     if (!mapInstanceRef.current) return;

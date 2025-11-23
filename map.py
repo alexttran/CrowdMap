@@ -167,9 +167,9 @@ class TriangulationPlotter:
        
         # ESP32 positions (you can adjust these based on your actual setup)
         # Forming a triangle for better triangulation
-        self.esp1_pos = np.array([0, 0])      # Bottom left
-        self.esp2_pos = np.array([10, 0])     # Bottom right
-        self.esp3_pos = np.array([5, 8.66])   # Top (equilateral triangle)
+        self.esp1_pos = np.array([20, 90])      # Bottom left
+        self.esp2_pos = np.array([100, 80])     # Bottom right
+        self.esp3_pos = np.array([30, 10])   # Top (equilateral triangle)
        
         # Setup plot
         self.fig, self.ax = plt.subplots(figsize=(12, 10))

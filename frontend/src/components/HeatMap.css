@@ -20,6 +20,11 @@
 .node-marker {
   background: transparent !important;
   border: none !important;
+  cursor: move !important;
+}
+
+.leaflet-marker-draggable {
+  cursor: move !important;
 }
 
 .node-marker-inner {

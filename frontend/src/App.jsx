@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import HeatMap from './components/HeatMap';
 import StatsPanel from './components/StatsPanel';
-import { esp32Nodes, detectedDevices, updateDevicePositions } from './data/mockData';
+import { esp32Nodes, detectedDevices, updateDevicePositions, updateNodePosition } from './data/mockData';
 import './App.css';
 
 // WebSocket server URL - change if running on different host
@@ -24,6 +24,9 @@ function App() {
       reconnectionDelay: 1000,
       reconnectionAttempts: 5
     });
+
+    // Store socket in window for access in handleNodePositionChanged
+    window.crowdMapSocket = socket;
 
     socket.on('connect', () => {
       console.log('✅ Connected to CrowdMap backend!');
@@ -75,10 +78,35 @@ function App() {
     }
   }, [isConnected]);
 
+  // Handle node position changes from drag events
+  const handleNodePositionChanged = ({ nodeId, nodeName, newPosition }) => {
+    console.log(`🔄 Node position update: ${nodeName} -> [${newPosition[0].toFixed(2)}, ${newPosition[1].toFixed(2)}]`);
+
+    // Update mock data nodes if using mock data
+    if (!isConnected) {
+      updateNodePosition(nodeId, newPosition);
+      console.log('✅ Updated mock node position - devices will retriangulate');
+    }
+
+    // Send updated node position to backend if connected
+    if (window.crowdMapSocket && window.crowdMapSocket.connected) {
+      window.crowdMapSocket.emit('node_position_update', {
+        nodeId,
+        nodeName,
+        position: newPosition
+      });
+      console.log('✅ Sent to backend - devices will recalculate on next update');
+    }
+  };
+
   return (
     <div className="app">
       <div className="main-content">
-        <HeatMap devices={devices} nodes={nodes} />
+        <HeatMap
+          devices={devices}
+          nodes={nodes}
+          onNodePositionChanged={handleNodePositionChanged}
+        />
         <div className="connection-indicator">
           <div className={`status-dot ${connectionStatus}`}></div>
           <span>

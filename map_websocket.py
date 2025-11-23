@@ -275,6 +275,41 @@ def handle_disconnect():
     print('🌐 Frontend disconnected')
 
 
+@socketio.on('node_position_update')
+def handle_node_position_update(data):
+    """Handle node position updates from frontend when user drags nodes"""
+    global triangulation
+
+    if not triangulation:
+        print('⚠️ Triangulation engine not initialized yet')
+        return
+
+    node_id = data.get('nodeId')
+    node_name = data.get('nodeName')
+    new_position = data.get('position')  # [x, y]
+
+    print(f"📍 Received position update: {node_name} -> [{new_position[0]:.2f}, {new_position[1]:.2f}]")
+
+    # Update the corresponding node position
+    if node_id == 'ESP32-A':
+        triangulation.esp1_pos = np.array(new_position)
+        print(f"✅ Updated Node 1 position")
+    elif node_id == 'ESP32-B':
+        triangulation.esp2_pos = np.array(new_position)
+        print(f"✅ Updated Node 2 position")
+    elif node_id == 'ESP32-C':
+        triangulation.esp3_pos = np.array(new_position)
+        print(f"✅ Updated Node 3 position")
+    else:
+        print(f"⚠️ Unknown node ID: {node_id}")
+        return
+
+    print(f"🔄 Device positions will be recalculated with new node position on next update")
+
+    # Immediately broadcast updated data
+    broadcast_data()
+
+
 def broadcast_data():
     """Broadcast triangulation data to all connected clients"""
     if triangulation:
